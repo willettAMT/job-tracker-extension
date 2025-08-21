@@ -1,4 +1,3 @@
-// background.js - Updated with dynamic sheet ID from storage
 console.log('Background script loaded');
 
 class GoogleSheetsService {
@@ -72,6 +71,10 @@ class GoogleSheetsService {
                 await this.getAuthToken();
             }
 
+            if (sheetId) {
+                this.spreadsheetId = sheetId;
+            }
+
             // Format data for the specific columns in your sheet
             // Date|Role|Company|Application Status|Location|Cover Letter|App URL|Internal Contact|Email
             const currentDate = new Date().toLocaleDateString('en-US'); // M/D/YYYY format
@@ -89,11 +92,9 @@ class GoogleSheetsService {
 
             console.log('Formatted row data:', rowData);
 
-            // Then in addJobData(), use:
             const sheetName = await this.getFirstSheetName();
             const response = await fetch(
                 `${this.sheetsApiBase}/${this.spreadsheetId}/values/${sheetName}:append?valueInputOption=USER_ENTERED`,
-                // ... rest of the code
                 {
                     method: 'POST',
                     headers: {
@@ -163,7 +164,7 @@ class GoogleSheetsService {
 }
 
 // Listen for messages from content script and popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, _, sendResponse) => {
     console.log('Background received message:', request);
 
     if (request.action === 'saveJobData') {
