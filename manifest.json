@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Job Tracker",
+    "version": "1.0",
+    "permissions": ["identity", "activeTab"],
+    "oauth2": {
+        "client_id": "407097235334-dhe31csjva87rflfdk6h3tv0s9afqehk.apps.googleusercontent.com",
+        "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"]
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    }
+}
