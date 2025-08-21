@@ -7,7 +7,6 @@
     "permissions": [
         "identity",
         "storage",
-        "activeTab"
     ],
 
     "host_permissions": [
