@@ -9,7 +9,7 @@ This Chrome extension automatically captures job details from LinkedIn, Indeed, 
 ## 🚀 Quick Start
 
 ### 1. Install the Extension
-- Download from the Chrome Web Store (link coming soon)
+- Download from the Chrome Web Store (link coming soon -- Pending Approval from Reviewers!)
 - Or install manually (see Development section below)
 
 ### 2. Set Up Your Google Sheets
