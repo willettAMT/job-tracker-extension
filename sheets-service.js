@@ -38,7 +38,6 @@ class GoogleSheetsService {
       // Write to sheets
       const result = await this.writeToSheet(formattedData, nextRow);
       
-      console.log('✅ Successfully added to Google Sheets:', result);
       return { success: true, row: nextRow };
       
     } catch (error) {
@@ -113,7 +112,6 @@ class GoogleSheetsService {
     try {
       await this.getAuthToken();
       const nextRow = await this.findNextEmptyRow();
-      console.log('✅ Sheets connection test successful. Next row:', nextRow);
       return true;
     } catch (error) {
       console.error('❌ Sheets connection test failed:', error);

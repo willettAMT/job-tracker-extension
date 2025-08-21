@@ -56,7 +56,6 @@ class JobTracker {
         });
 
         document.body.appendChild(button);
-        console.log('✅ Job tracker button added');
     }
 
     async handleTrackJob() {
@@ -67,8 +66,6 @@ class JobTracker {
         try {
             // Extract job data
             const jobData = this.extractJobData();
-            console.log('Job data extracted:', jobData);
-
             // Send to background script for Sheets integration
             chrome.runtime.sendMessage({
                 action: 'saveJobData',
@@ -84,7 +81,6 @@ class JobTracker {
             });
 
         } catch (error) {
-            console.error('Error tracking job:', error);
             this.showMessage(`❌ Error: ${error.message}`, 'error');
             button.innerHTML = '❌ Error';
         }
