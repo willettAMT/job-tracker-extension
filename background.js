@@ -1,12 +1,38 @@
-// background.js - Add debugging
+// background.js - Updated with dynamic sheet ID from storage
 console.log('Background script loaded');
 
 class GoogleSheetsService {
     constructor() {
-        this.spreadsheetId = '1Rkddcxs28pRSJ3S3wC0--AueWg6_ufjQjPCePl98mPM';
+        // Remove hardcoded sheet ID - now loaded from storage
+        this.spreadsheetId = null;
         this.sheetsApiBase = 'https://sheets.googleapis.com/v4/spreadsheets';
         this.accessToken = null;
         console.log('GoogleSheetsService created');
+    }
+
+    async getSheetId() {
+        if (this.spreadsheetId) {
+            return this.spreadsheetId;
+        }
+
+        try {
+            const result = await chrome.storage.sync.get('sheetId');
+            if (result.sheetId) {
+                this.spreadsheetId = result.sheetId;
+                console.log('Sheet ID loaded from storage:', this.spreadsheetId);
+                return this.spreadsheetId;
+            } else {
+                // Fallback to your original sheet ID if nothing stored
+                this.spreadsheetId = '1Rkddcxs28pRSJ3S3wC0--AueWg6_ufjQjPCePl98mPM';
+                console.log('Using fallback sheet ID:', this.spreadsheetId);
+                return this.spreadsheetId;
+            }
+        } catch (error) {
+            console.error('Error getting sheet ID:', error);
+            // Use fallback on error
+            this.spreadsheetId = '1Rkddcxs28pRSJ3S3wC0--AueWg6_ufjQjPCePl98mPM';
+            return this.spreadsheetId;
+        }
     }
 
     async getAuthToken() {
@@ -27,11 +53,21 @@ class GoogleSheetsService {
         });
     }
 
-    // Add this to your GoogleSheetsService class
+    async getFirstSheetName() {
+        const response = await fetch(`${this.sheetsApiBase}/${this.spreadsheetId}`, {
+            headers: { 'Authorization': `Bearer ${this.accessToken}` }
+        });
+        const data = await response.json();
+        return data.sheets[0].properties.title;
+    }
+
     async addJobData(jobData) {
         console.log('Adding job data:', jobData);
 
         try {
+            // Get sheet ID from storage
+            const sheetId = await this.getSheetId();
+
             if (!this.accessToken) {
                 await this.getAuthToken();
             }
@@ -41,7 +77,7 @@ class GoogleSheetsService {
             const currentDate = new Date().toLocaleDateString('en-US'); // M/D/YYYY format
             const rowData = [
                 currentDate,           // Date
-                jobData.title || '',    // Role  
+                jobData.title || '',   // Role (fixed: was jobData.role)
                 jobData.company || '', // Company
                 'Applied',            // Application Status
                 '',                   // Location (empty)
@@ -52,9 +88,12 @@ class GoogleSheetsService {
             ];
 
             console.log('Formatted row data:', rowData);
+
+            // Then in addJobData(), use:
             const sheetName = await this.getFirstSheetName();
             const response = await fetch(
                 `${this.sheetsApiBase}/${this.spreadsheetId}/values/${sheetName}:append?valueInputOption=USER_ENTERED`,
+                // ... rest of the code
                 {
                     method: 'POST',
                     headers: {
@@ -85,90 +124,45 @@ class GoogleSheetsService {
         }
     }
 
-    formatJobData(jobData) {
-        // Format to match your exact columns: Date, Role, Company, Application Status, Location, Cover Letter, App URL, Internal Contact, Email
-        const today = new Date().toLocaleDateString('en-US'); // Matches your 8/17/2025 format
-        return [
-            today,                                    // Date
-            jobData.title || 'Unknown Role',          // Role
-            jobData.company || 'Unknown Company',     // Company  
-            'Applied',                                // Application Status
-            '',                                       // Location (empty for now)
-            '',                                       // Cover Letter (empty for now)
-            jobData.url || window.location.href,     // App URL
-            '',                                       // Internal Contact (empty for now)
-            ''                                        // Email (empty for now)
-        ];
-    }
+    async testConnection(customSheetId = null) {
+        console.log('Testing connection...');
 
-    async findNextEmptyRow(sheetName = 'Sheet1') {
-        const range = `${sheetName}!A:A`;
-        const url = `${this.sheetsApiBase}/${this.spreadsheetId}/values/${range}`;
-
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${this.accessToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to read sheet: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const values = data.values || [];
-
-        // Return next empty row (accounting for header row)
-        return values.length + 1;
-    }
-
-    async writeToSheet(rowData, rowNumber, sheetName = 'Sheet1') {
-        const range = `${sheetName}!A${rowNumber}:I${rowNumber}`; // A to I for all 9 columns
-        const url = `${this.sheetsApiBase}/${this.spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
-
-        const body = {
-            values: [rowData]
-        };
-
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${this.accessToken}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to write to sheet: ${response.statusText} - ${errorText}`);
-        }
-
-        return response.json();
-    }
-
-    async testConnection() {
         try {
-            await this.getAuthToken();
-            const nextRow = await this.findNextEmptyRow();
-            console.log('✅ Sheets connection test successful. Next row:', nextRow);
-            return true;
+            // Use custom sheet ID if provided (from popup test), otherwise get from storage
+            const sheetId = customSheetId || await this.getSheetId();
+
+            // Get auth token
+            if (!this.accessToken) {
+                await this.getAuthToken();
+            }
+
+            // Test by getting sheet metadata
+            const response = await fetch(
+                `${this.sheetsApiBase}/${sheetId}?fields=properties.title`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Connection test failed: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Connection test successful:', result.properties.title);
+            return { success: true, title: result.properties.title };
+
         } catch (error) {
-            console.error('❌ Sheets connection test failed:', error);
-            return false;
+            console.error('❌ Connection test failed:', error);
+            return { success: false, error: error.message };
         }
-    }
-    // Add this method to find the first sheet:
-    async getFirstSheetName() {
-        const response = await fetch(`${this.sheetsApiBase}/${this.spreadsheetId}`, {
-            headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
-        const data = await response.json();
-        return data.sheets[0].properties.title;
     }
 }
 
-// Listen for messages from content script
+// Listen for messages from content script and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Background received message:', request);
 
@@ -183,6 +177,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
             .catch((error) => {
                 console.error('❌ Error saving to sheets:', error);
+                sendResponse({ success: false, error: error.message });
+            });
+
+        return true; // Keep message channel open for async response
+    }
+
+    if (request.action === 'testConnection') {
+        console.log('Processing testConnection request');
+        const sheetsService = new GoogleSheetsService();
+
+        sheetsService.testConnection(request.sheetId)
+            .then((result) => {
+                console.log('Connection test result:', result);
+                sendResponse(result);
+            })
+            .catch((error) => {
+                console.error('Connection test error:', error);
                 sendResponse({ success: false, error: error.message });
             });
 

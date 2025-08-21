@@ -2,21 +2,45 @@
     "manifest_version": 3,
     "name": "Job Tracker",
     "version": "1.0",
-    "permissions": ["identity", "activeTab"],
+    "description": "Track job applications directly to Google Sheets from LinkedIn, Indeed, and other job sites",
+
+    "permissions": [
+        "identity",
+        "storage",
+        "activeTab"
+    ],
+
+    "host_permissions": [
+        "https://sheets.googleapis.com/*",
+        "https://www.googleapis.com/*"
+    ],
+
     "oauth2": {
         "client_id": "407097235334-dhe31csjva87rflfdk6h3tv0s9afqehk.apps.googleusercontent.com",
-        "scopes": ["https://www.googleapis.com/auth/spreadsheets"]
+        "scopes": [
+            "https://www.googleapis.com/auth/spreadsheets"
+        ]
     },
+
     "background": {
         "service_worker": "background.js"
     },
+
     "content_scripts": [
         {
-            "matches": ["<all_urls>"],
-            "js": ["content.js"]
+            "matches": [
+                "https://*.linkedin.com/*",
+                "https://*.indeed.com/*",
+                "https://*.glassdoor.com/*",
+                "https://*.monster.com/*"
+            ],
+            "js": ["content.js"],
+            "run_at": "document_end"
         }
     ],
+
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_title": "Job Tracker Settings"
     }
 }

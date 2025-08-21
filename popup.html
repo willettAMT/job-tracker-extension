@@ -3,18 +3,189 @@
     <head>
         <meta charset="utf-8">
         <style>
-body { width: 300px; padding: 20px; font-family: Arial, sans-serif; }
-button { width: 100%; padding: 10px; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-button:hover { background: #3367d6; }
-#result { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; }
-.success { background: #d4edda; color: #155724; }
-.error { background: #f8d7da; color: #721c24; }
+body {
+    width: 350px;
+    padding: 16px;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    background: #f8f9fa;
+}
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0 0 8px 0;
+            color: #1a73e8;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .header p {
+            margin: 0;
+            color: #5f6368;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #3c4043;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 1px #1a73e8;
+        }
+
+        .help-text {
+            font-size: 11px;
+            color: #5f6368;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .help-text a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1557b0;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status.show {
+            opacity: 1;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #137333;
+            border: 1px solid #ceead6;
+        }
+
+        .status.error {
+            background: #fce8e6;
+            color: #d93025;
+            border: 1px solid #f9d0cc;
+        }
+
+        .current-sheet {
+            background: #e8f0fe;
+            border: 1px solid #d2e3fc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+        }
+
+        .current-sheet-label {
+            font-size: 11px;
+            color: #5f6368;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .current-sheet-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #1a73e8;
+            word-break: break-all;
+        }
         </style>
     </head>
     <body>
-        <h3>🔑 Job Tracker</h3>
-        <button id="authBtn">Test Authentication</button>
-        <div id="result"></div>
+        <div class="header">
+            <h2>📝 Job Tracker Settings</h2>
+            <p>Configure your Google Sheets integration</p>
+        </div>
+
+        <div id="currentSheet" class="current-sheet" style="display: none;">
+            <div class="current-sheet-label">Current Sheet:</div>
+            <div class="current-sheet-id" id="currentSheetId"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="sheetId">Google Sheets ID:</label>
+            <input type="text" id="sheetId" placeholder="1Rkddcxs28pRSJ3S3wC0--AueWg6_ufjQjPCePl98mPM">
+            <div class="help-text">
+                Copy the ID from your Google Sheet URL:<br>
+                docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit<br>
+                <a href="#" id="helpLink">Need help finding it?</a>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="saveBtn" class="btn-primary">Save Settings</button>
+            <button id="testBtn" class="btn-secondary">Test Connection</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
         <script src="popup.js"></script>
     </body>
 </html>
