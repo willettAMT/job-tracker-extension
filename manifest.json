@@ -6,7 +6,7 @@
 
     "permissions": [
         "identity",
-        "storage",
+        "storage"
     ],
 
     "host_permissions": [
