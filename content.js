@@ -15,7 +15,7 @@ class JobTracker {
 
     isJobSite() {
         const hostname = window.location.hostname.toLowerCase();
-        const jobSites = ['linkedin.com', 'indeed.com', 'glassdoor.com', 'monster.com'];
+        const jobSites = ['linkedin.com', 'indeed.com', 'glassdoor.com', 'builtin.com'];
         return jobSites.some(site => hostname.includes(site));
     }
 
